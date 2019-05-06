@@ -5,6 +5,8 @@ import collections
 from nltk import pos_tag
 
 
+FILE_LIMIT = 100
+
 # def flat(_list) после рефакторинга стала ненужной
 
 
@@ -21,8 +23,8 @@ def get_filenames(path):
         for file in files:
             if file.endswith('.py'):
                 filenames.append(os.path.join(dirname, file))
-                if len(filenames) == 100:
-                    break
+                if len(filenames) == FILE_LIMIT:
+                    return filenames
     return filenames
 
 
@@ -36,7 +38,11 @@ def parse_file(file):
 
 
 def get_trees(path, with_filenames=False, with_file_content=False):
-
+    """
+    Возвращает список распарсенных с помощью ast модуля .py файлов.
+    С помощью функции os.walk рекурсивно проходится по всем директориям,
+    находящимся в папке path, ищет .py файлы и заносит их в список trees
+    """
     trees = []
     filenames = get_filenames(path)
     print('total %s files in path %s' % (len(filenames), path))
@@ -69,13 +75,13 @@ def get_verbs_from_functions(functions):
             verbs.append(verb)
     return verbs
 
-# def get_all_words_in_path(path) нигде не используется
 
+# def get_all_words_in_path(path) нигде не используется
 
 def get_functions(trees):
     functions = []
-    for t in trees:
-        for node in ast.walk(t):
+    for tree in trees:
+        for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
                 name = node.name.lower()
                 if not (name.startswith('__') and name.endswith('__')):
