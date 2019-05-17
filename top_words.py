@@ -5,13 +5,13 @@ import subprocess
 import json
 import csv
 from nltk import pos_tag
-
+from uuid import uuid4
 
 FILE_LIMIT = 100
 TOP_SIZE = 200
 
 
-class Top_words:
+class TopWords:
     def __init__(self):
         self.word_type = 'noun'
         self.find_where = 'function'
@@ -32,8 +32,8 @@ class Top_words:
                     csv_writer.writerow(word)
                 print('CSV file exported!')
 
-    def clone_project(self, path):
-        code = subprocess.call('git clone ' + path)
+    def clone_project(self, url, folder):
+        code = subprocess.call('git clone ' + url + ' ' + folder)
         if code == 0:
             print("Sucess clone!")
         else:
@@ -121,14 +121,18 @@ class Top_words:
 
 
 def main():
-    top = Top_words()
+    top = TopWords()
     #  1. Вводим url проекта который нужно склонировать
-    project_path = input('Enter project url to clone >> ')
-    project = project_path.split('/')[-1].replace('.git', '')
-    answer = top.clone_project(project_path)
+    while True:
+        project_path = input('Enter project url to clone >> ')
+        if(project_path != ""):
+            break
+        print('Error: Url cannot be empty!')
+    temp_path = 'projects/'+str(uuid4())
+    answer = top.clone_project(project_path, temp_path)
     if answer != 0:
         return
-    path = os.path.join('.', project)
+    path = os.path.join('.', temp_path)
     #  2. Искать глаголы или существительные
     while True:
         word_type = input('Enter word type (verb/noun) >> ')
@@ -154,7 +158,7 @@ def main():
         if export_type in ['json', 'csv', 'no']:
             top.export_type = export_type
             break
-        print('Error: Enter valid type!')
+        print('Error: Enter valid data type!')
     if export_type != 'no':
         top.export(wds)
 
